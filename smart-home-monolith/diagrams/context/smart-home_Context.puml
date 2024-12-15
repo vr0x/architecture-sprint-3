@@ -1,0 +1,23 @@
+@startuml
+title Smart Home Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Пользователь системы Smart House")
+
+Container_Boundary(SmartHomeSystem, "Система Smart Home"){
+    Container_Boundary(ControlDomain, "Домен: управление устройствами"){
+            System(HeatSubDomain, "Поддомен: управление отоплением", "Включение, выключение, контроль температуры")
+            System(MonitoringSubDomain, "Поддомен: Мониторинг температуры", "Мониторинг температуры")
+    }
+}
+System_Ext(HeatingSystem, "Устройства отопления", "Управляемое отопительное оборудование")
+System_Ext(TemperatureSensor, "Телеметрия", "Датчики температуры")
+
+Rel(user, SmartHomeSystem, "Управление домом")
+Rel(HeatSubDomain,HeatingSystem,"Управление устройствами отопления")
+Rel(MonitoringSubDomain,TemperatureSensor,"Обработка показаний температуры")
+
+@enduml

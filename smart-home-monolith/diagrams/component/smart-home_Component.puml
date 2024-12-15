@@ -1,0 +1,87 @@
+@startuml
+title Smart Home Component Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of the fitness club system")
+System(FitLifeSystem, "Smart Home", "System managing memberships, schedules, and payments")
+
+Container_Boundary(FitLifeSystem, "Smart Home") {
+    Container(WebApplication, "Web Application", "Java, Spring", "Веб-приложение"){
+        Component(APIGateway, "APIGataway", "")
+        Component(WebApp, "WebApp", "")
+    }
+    Container(Kafka, "Message broker", "Kafka", "Брокер сообщений")
+
+    Container_Boundary(Heating, "Heating"){
+        Container(HeatService, "Сервис: Управление отоплением", "Включение, выключение, контроль температуры"){
+            Component(HeatingApi, "HeatingApi", "")
+            Component(HeatingService, "Heating Service", "Business logic")
+            Component(DeviceManager, "Device Manager", "Device state manager")
+        }
+        Container(HeatDatabase, "Heating Database", "PostgreSQL", "Хранения данных отопительных приборов")
+    }
+
+    Container_Boundary(Telemetry, "Telemetry"){
+        Container(HeatMonitoring, "Сервис: Мониторинг температуры", "Мониторинг температуры"){
+            Component(TelemetryApi, "Telemetry Api", "")
+            Component(Sensor, "Sensor", "Heating data sensor")
+        }
+        Container(TelemetryDatabase, "Telemetry Database", "PostgreSQL", "Хранение данных температурных датчиков")
+    }
+
+    Container_Boundary(Doors, "Doors"){
+        Container(DoorsService, "Сервис: управление воротами", "Открытие, закрытие ворот"){
+            Component(DoorsApi, "Doors Api", "")
+            Component(DoorsManager, "Doors manager", "Doors divice manager")
+        }
+        Container(DoorsDatabase, "Doors Database", "PostgreSQL", "Хранение данных ворот")
+    }
+
+    Container_Boundary(Light, "Light"){
+        Container(LightService, "Сервис: управление освещением", "Вкключение, выключение осветительных приборов"){
+            Component(LightApi, "Light Api", "")
+            Component(LIghtManager, "Light manager", "Light device manager")
+        }
+        Container(LightDatabase, "Light Database", "PostgreSQL", "Хранение данных освещения")
+    }
+
+    Container_Boundary(Video, "Video"){
+        Container(VideoService, "Сервис: видеонаблюдение", "видеосъека объектов наблюдения"){
+            Component(VideoApi, "Video Api", "")
+            Component(VideoHostService, "Video Host Service", "Video Host Schedule")
+            Component(VideoManager, "Video devices manager", "Video devices manager")
+        }
+        Container(VideoDatabase, "Video Database", "PostgreSQL", "Хранение данных видеонаблюдения")
+    }
+
+
+}
+
+Rel(user, APIGateway, "Uses the system")
+Rel(APIGateway, Kafka,"")
+Rel(Kafka, APIGateway, "")
+Rel(APIGateway, WebApp, "")
+
+
+Rel(HeatingApi, Kafka,"")
+Rel(Kafka,HeatDatabase,"")
+
+Rel(TelemetryApi, Kafka,"")
+Rel(Sensor, Kafka, "")
+
+Rel(Kafka,TelemetryDatabase,"")
+
+Rel(DoorsApi, Kafka,"")
+Rel(Kafka,DoorsDatabase,"")
+
+Rel(LightApi, Kafka,"")
+Rel(Kafka,LightDatabase,"")
+
+Rel(VideoService, Kafka,"")
+Rel(Kafka,VideoDatabase,"")
+
+
+@enduml

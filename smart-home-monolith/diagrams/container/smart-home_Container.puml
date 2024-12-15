@@ -1,0 +1,86 @@
+@startuml
+title Smart Home Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Пользователь системы Smart House")
+System(SmartHomeSystem, "Smart Home", "")
+
+Container_Boundary(SmartHomeSystem, "Smart Home") {
+  Container(WebApp, "Web Application", "Java, Spring", "Веб-приложение")
+  Container(Kafka, "Message broker", "Kafka", "Брокер сообщений")
+
+  Container_Boundary(Heating, "Heating"){
+    Container(HeatService, "Сервис: Управление отоплением", "Включение, выключение, контроль температуры")
+    Container(HeatDatabase, "Heating Database", "PostgreSQL", "Хранения данных отопительных приборов")
+  }
+
+  Container_Boundary(Telemetry, "Telemetry"){
+    Container(HeatMonitoring, "Сервис: Мониторинг температуры", "Мониторинг температуры")
+    Container(TelemetryDatabase, "Telemetry Database", "PostgreSQL", "Хранение данных температурных датчиков")
+  }
+
+  Container_Boundary(Doors, "Doors"){
+    Container(DoorsService, "Сервис: управление воротами", "Открытие, закрытие ворот")
+    Container(DoorsDatabase, "Doors Database", "PostgreSQL", "Хранение данных ворот")
+  }
+
+  Container_Boundary(Light, "Light"){
+    Container(LightService, "Сервис: управление освещением", "Вкключение, выключение осветительных приборов")
+    Container(LightDatabase, "Light Database", "PostgreSQL", "Хранение данных освещения")
+  }
+
+  Container_Boundary(Video, "Video"){
+    Container(VideoService, "Сервис: видеонаблюдение", "видеосъека объектов наблюдения")
+    Container(VideoDatabase, "Video Database", "PostgreSQL", "Хранение данных видеонаблюдения")
+  }
+
+
+}
+
+System_Ext(HeatingSystem, "Устройства отопления", "Управляемое отопительное оборудование")
+System_Ext(TemperatureSensor, "Телеметрия", "Датчики приборов")
+System_Ext(DoorSystem, "Ворота", "Приборы управление воротами")
+System_Ext(LightSystem, "Свет", "Приборы управление светом")
+System_Ext(VideoSystem, "Видеонаблюдением", "Система видеонаблюдения")
+
+Rel(user, WebApp, "Uses the system")
+Rel(WebApp, Kafka,"")
+Rel(Kafka, WebApp, "")
+
+Rel(HeatService, WebApp,"")
+Rel(HeatMonitoring,WebApp,"")
+Rel(DoorsService,WebApp,"")
+Rel(LightService,WebApp,"")
+Rel(VideoService, WebApp,"")
+
+Rel(HeatService, Kafka,"")
+Rel(HeatService, HeatDatabase,"")
+Rel(HeatDatabase, HeatService,"")
+
+Rel(HeatMonitoring, Kafka,"")
+Rel(HeatMonitoring, TelemetryDatabase,"")
+Rel(TelemetryDatabase, HeatMonitoring,"")
+
+Rel(DoorsService, Kafka,"")
+Rel(DoorsService, DoorsDatabase,"")
+Rel(DoorsDatabase, DoorsService,"")
+
+Rel(LightService, Kafka,"")
+Rel(LightService, LightDatabase,"")
+Rel(LightDatabase, LightService,"")
+
+Rel(VideoService, Kafka,"")
+Rel(VideoService, VideoDatabase,"")
+Rel(VideoDatabase, VideoService,"")
+
+
+Rel(WebApp, LightSystem, "")
+Rel(WebApp, VideoSystem,"")
+Rel( WebApp, DoorSystem,,"")
+Rel(TemperatureSensor, WebApp,"")
+Rel(WebApp, HeatingSystem,"")
+
+@enduml

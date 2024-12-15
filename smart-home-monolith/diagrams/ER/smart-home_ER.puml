@@ -1,0 +1,63 @@
+@startuml
+title FitLife Membership Management Code Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+
+entity "User" {
+  * user_id : number
+  --
+  * house_id : FK number
+  name: varchar
+  email : varchar
+  password : varchar
+}
+
+entity "House"{
+* house_id : number
+--
+* user_id : number
+ address: varchar
+}
+
+
+entity System {
+  * system_id : number
+  --
+  * system_type : FK number
+  * house_id: FK number
+  status: boolean
+}
+
+entity SystemType {
+  * _id : number
+  --
+  * device_type : FK number
+}
+
+entity DeviceType {
+  * _id : number
+  --
+  * telemetry_data : FK number
+  target_data: number 
+}
+
+
+entity Telemetry{
+   * _id : number
+   --
+   value: number
+   date: Date
+}
+
+
+
+User "1" -- "0..*" House 
+House  "1" -- "0..*" System
+System "1" -- "1" SystemType
+SystemType "1" -- "0..*" DeviceType
+DeviceType "1" -- "0.." Telemetry
+
+@enduml

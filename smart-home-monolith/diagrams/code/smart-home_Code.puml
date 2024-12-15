@@ -1,0 +1,44 @@
+@startuml
+title Heating Service Code Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+
+class HeatingSystem {
+ +Long id
+ +boolean isOn
+ +double targetTemperature
+ +double currentTemperature
+}
+
+class HeatingSystemController {
+  +HeatingSystem getHeatingSystem()
+  +HeatingSystem updateHeatingSystem()
+  +void turnOn()
+  +void turnOff()
+  +void setTargetTemperature()
+  +Double getCurrentTemperature()
+}
+
+
+class HeatingSystemService {
+  +Date date
+  +String activity
+  +void addActivity()
+  +void removeActivity()
+  +HeatingSystem getHeatingSystem()
+  +HeatingSystem updateHeatingSystem()
+  +void turnOn()
+  +void turnOff()
+  +void setTargetTemperature()
+  +Double getCurrentTemperature()
+}
+
+
+HeatingSystemController --> HeatingSystemService
+HeatingSystemController --> HeatingSystem
+HeatingSystemService --> HeatingSystem
+
+@enduml
