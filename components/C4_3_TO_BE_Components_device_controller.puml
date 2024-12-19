@@ -1,0 +1,44 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+title UML-диаграмма классов для AuthManager
+
+class AuthManager {
+    +login(email: string, password: string): AuthToken
+    +logout(token: AuthToken): void
+    +validateToken(token: AuthToken): boolean
+    -hashPassword(password: string): string
+    -tokens: Map<AuthToken, User>
+}
+
+class User {
+    -id: UUID
+    -name: string
+    -email: string
+    -passwordHash: string
+    +getRoles(): List<Role>
+}
+
+class AuthToken {
+    -tokenValue: string
+    -expiryDate: DateTime
+}
+
+class Role {
+    -id: UUID
+    -name: string
+    -permissions: List<Permission>
+}
+
+class Permission {
+    -id: UUID
+    -name: string
+    -description: string
+}
+
+AuthManager o-- User : "использует"
+AuthManager --> AuthToken : "выдает"
+User *-- Role : "имеет"
+Role *-- Permission : "содержит"
+
+@enduml

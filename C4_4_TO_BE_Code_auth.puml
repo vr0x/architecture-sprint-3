@@ -1,0 +1,68 @@
+@startuml
+
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <u>x</u>
+
+entity "Пользователь" as User {
+    primary_key(id) : UUID
+    --
+    имя : string
+    email : string
+    login : string
+    password_hash : string
+    created_at : datetime
+    updated_at : datetime
+}
+
+
+entity "Место" as Place {
+    primary_key(id) : UUID
+    --
+    title : string
+    address : string
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "Доступ пользователя к месту" as UserPlaceAccess {
+    foreign_key(user_id) : UUID [FK к Пользователь]
+    foreign_key(place_id) : UUID [FK к Месту]
+    --
+    role : string
+    created_at : datetime
+}
+
+
+entity "Тип устройства" as DeviceType {
+    primary_key(id) : UUID
+    --
+    title : string
+    manufacturer : string
+    model : string
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "Устройство" as Device {
+    primary_key(id) : UUID
+    --
+    foreign_key(device_type_id) : UUID [FK к Тип устройства]
+    foreign_key(place_id) : UUID [FK к Месту]
+    serial_number : string
+    mac: string
+    status : string
+    title : string
+    state: json
+    created_at : datetime
+    updated_at : datetime
+}
+
+
+User ||--|{UserPlaceAccess  : "Доступ пользователя к месту"
+Place ||--|{UserPlaceAccess  : "Пользователи и места"
+Device ||--|{ Place : "Устройства на местах"
+DeviceType ||--|{ Device : "Устройства"
+
+
+
+@enduml

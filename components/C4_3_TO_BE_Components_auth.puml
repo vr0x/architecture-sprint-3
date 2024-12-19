@@ -1,0 +1,27 @@
+@startuml
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary(c1, "Авторизация") {
+  Component(sign_in, "Sign In", "Spring MVC","Авторизует пользователя")
+  Component(security, "Security", "Spring bean", "Проверка токена")
+  Component(sign_on, "Sign On", "Spring MVC", "Регистрирует пользователя")
+  Component(reset_pass, "Reset password", "Spring MVC", "Регистрирует пользователя")
+  Component(email, "Email sender","Spring bean", "Формирование и отправка email")
+}
+
+
+ContainerDb(users_db, "Postgres", "Relational Database", "Хранение данных о пользователе")
+Container_Ext(notification, "Уведомления", "Сервис отправки уведомлений push, email, sms")
+
+Rel(reset_pass, security, "Проверка на безопасность", "")
+Rel(sign_in, security, "Проверка на безопасность", "")
+Rel(sign_on, security, "Проверка на безопасность", "")
+
+Rel(reset_pass, email, "Отправка письма", "")
+Rel(sign_on, email, "Регистрация", "HTTPS")
+Rel(email, notification, "Отправка письма", "HTTPS")
+
+Rel(security, users_db, "Авторизация", "SQL/TCP")
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Container_Ext(device, "Device", "Логирует все изменения с датчиков")
+
+Person(client, "Client")
+
+System_Boundary(c1, "Мониторинг устройств") {
+  Component(register, "Register Data", "Spring MVC","Примнимает запросыданные от устройств")
+  Component(view, "View Data", "Spring MVC","Отдает аггрегированные данные на клиент")
+
+  Component(queue, "Aggregation Queue", "RabbitMQ","Очередь задач на обработку данных")
+  Component(data_controller, "Data controller", "Spring","Обработка данных")
+
+}
+
+ContainerDb(telemetry_db, "MongoDB", "NoSQL", "Логирует все изменения с датчиков")
+
+Rel(device, register, "Изменились данные с датчиков", "")
+Rel(register, telemetry_db, "Сохранение сырых данных", "")
+Rel(data_controller, queue, "Запускает регулярную таску", "")
+
+Rel(telemetry_db, data_controller, "Сохраняет обработанные данные", "")
+Rel(data_controller, telemetry_db, "Забирает данные из базы для обработки", "")
+
+Rel(telemetry_db, view , "Забирает аггрегированные данные", "")
+Rel(client, view , "Забирает аггрегированные данные", "HTTPS")
+
+
+@enduml

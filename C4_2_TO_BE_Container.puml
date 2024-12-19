@@ -1,0 +1,53 @@
+@startuml
+!include <C4/C4_Container>
+
+Person(client, "Клиент")
+Person(engineer, "Инженер")
+
+Container(apigw, "API GateWay", "Java")
+
+System_Boundary(c1, "Управление устройствами") {
+    Container(home_controller, "Контроллер устройств", "Java", "Управляет устройствами")
+    ContainerDb(devices_db, "Postgres", "Relational Database", "Хранение данных об устройствах")
+}
+System_Boundary(telemetry, "Мониторинг устройств") {
+  Container(teltmetry_controller, "Сбора данных с устройств", "java", "Обрабатывает данные с устройств")
+  Container(teltmetry_aggregate, "Аггрегат данных", "java", "Например история изменения температуры")
+  ContainerDb(telemetry_qdb, "Message Queue", "RabbitMQ", "Очередь сбора статистики")
+  ContainerDb(telemetry_db, "MongoDB", "NoSQL", "Логирует все изменения с датчиков")
+}
+System_Boundary(notification, "Уведомления") {
+  Container(notification_send, "Отправка push, email, sms", "java", "Позволяет отправлять уведомления push, email, sms")
+  ContainerDb(queue_db, "Message Queue", "RabbitMQ", "Очередь для отправки сообщений")
+}
+System_Boundary(auth, "Авторизация") {
+  Container(auth_containter, "Авторизация", "Oauth", "Авторизует пользователя и обрабатывает доступы")
+  ContainerDb(users_db,"Postgres", "Relational Database", "Хранит данные о пользователях")
+}
+
+System_Ext(device, "Устройство умного дома")
+
+Rel(device, apigw, "Отправка данных с устройства", "HTTPS")
+Rel(client, apigw, "Управление устройствами, получение телеметрии, регистрация устройств", "HTTPS")
+Rel(engineer, apigw, "Администрирование", "HTTPS")
+
+Rel(apigw, home_controller, "Управление и добавление новго устройства", "GRPC")
+Rel(apigw, teltmetry_controller, "Сбор данных с устройства", "GRPC")
+Rel(apigw, teltmetry_aggregate, "Получение статистики", "GRPC")
+Rel(apigw, auth_containter, "Авторизация", "GRPC")
+
+Rel(auth_containter, users_db, "Авторизация", "GRPC")
+Rel(auth_containter, notification, "Отправка ведомлений о входе/регистрации", "GRPC")
+
+Rel(notification_send, queue_db, "Очередь на отправку", "GRPC")
+
+Rel(home_controller, devices_db, "Изменение состояний устройств", "GRPC")
+Rel(home_controller, device, "Изменение состояния устройства", "HTTPS")
+
+Rel(teltmetry_controller, telemetry_db, "Сохранение данных", "GRPC")
+Rel(teltmetry_aggregate, telemetry_qdb, "Обработка данных из очереди", "GRPC")
+Rel(telemetry_qdb, telemetry_db, "Забирает данные для аггрегатов", "GRPC")
+
+Rel(notification, client, "Отправка уведомлений", "HTTPS")
+
+@enduml

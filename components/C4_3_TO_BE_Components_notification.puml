@@ -1,0 +1,31 @@
+@startuml
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System_Boundary(c1, "Уведомления") {
+Component(controller, "Controller", "Spring MVC","Принимает и обрабатывает сообщени, кладет в БД")
+  Component(notification_queue, "MessageQueue", "RabbitMQ","Очередь на отправку")
+  Component(controller_sms, "Sms sender", "Spring MVC","Отвечает за интеграцию с сервисом отправки SMS")
+  Component(controller_mail, "Mail sender", "Spring MVC","Отвечает за интеграцию с сервисом отправки email")
+  Component(controller_push, "Push sender", "Spring MVC","Отвечает за интеграцию с сервисом отправки push уведомлений")
+  
+}
+
+ContainerDb(users_db, "Postgres", "Relational Database", "Хранение данных о пользователе")
+Container_Ext(notification_sms, "Отправка SMS", "Сервис отправки уведомлений sms")
+Container_Ext(notification_mail, "Отправка  Mail", "Сервис отправки уведомлений email")
+Container_Ext(notification_push, "Отправка  push", "Firebase")
+
+
+Rel(extrequest, controller, "Запрос на отправку уведомлений", "HTTPS")
+Rel(controller, users_db, "Сохраняет запрос на отправку", "SQL/TCP")
+
+Rel(controller_sms, notification_sms, "Отправка SMS", "HTTPS")
+Rel(controller_mail, notification_mail, "Отправка email", "HTTPS")
+Rel(controller_push, notification_push, "Отправка push уведомлений", "HTTPS")
+Rel(users_db, notification_queue, "Запуск задачи на отправку", "SQL/TCP")
+Rel(notification_queue, controller_sms, "Запуск задачи на отправку", "HTTPS")
+Rel(notification_queue, controller_mail, "Запуск задачи на отправку", "HTTPS")
+Rel(notification_queue, controller_push, "Запуск задачи на отправку", "HTTPS")
+
+@enduml
