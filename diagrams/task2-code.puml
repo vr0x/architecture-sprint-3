@@ -1,0 +1,53 @@
+@startuml
+class DevicesService {
+    + linkDevice(id: Uint): void
+    + updateDeviceConfig(deviceId: Uint, config: DeviceConfig): void
+    + enableDevice(deviceId: Uint): void
+    + disableDevice(deviceId: Uint): void
+    + unlinkDevice(deviceId: Uint): void
+    + listDevices(): List<Device>
+}
+
+class DevicesServiceRepository {
+    + findById(deviceId: Uint): Device
+    + save(device: Device): Device
+}
+
+class EventsConsumer {
+    + subscribe(deviceID: Uint, eventType: String): void
+}
+
+class EventsProducer {
+    + produce(event: SensorEvent): void
+}
+
+class Device {
+    + Uint id
+    + String name
+    + boolean isEnabled
+    + DeviceConfig config
+    + List<SensorEvent> generatedDeviceEvents
+    + updateConfig(cfg: DeviceConfig): void
+}
+
+struct DeviceConfig {
+    + String asJson
+}
+Device --> DeviceConfig
+
+struct SensorEvent {
+    + Uint id
+    + Uint deviceID
+    + String sensorType
+    + String eventType
+    + Timestamp time
+}
+
+DevicesService --> DevicesServiceRepository : CRUD
+DevicesService --> Device : Operate
+Device --> SensorEvent : Generate and send event
+SensorEvent --> EventsProducer: Event is sent
+EventsProducer --> EventsConsumer: Message Queue
+DevicesService --> EventsConsumer : Subscribe
+EventsConsumer --> DevicesService : Send event on subscription
+@enduml

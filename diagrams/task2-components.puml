@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(generalService, "Devices Controlling Service") {
+    Component(apiGateway, "API Gateway")
+    Component(controller, "Devices Controller")
+    Component(service, "Devices Service", "Handles external physical devices")
+    Component(database, "Devices Repository", "Handles high-level requests from Devices Service and direct it as database queries")
+    Component(consumer, "Message Queue Consumer", "Receive updates from sensors")
+}
+
+Rel(apiGateway, controller, "requests of users")
+Rel(controller, service, "operations on devices")
+Rel(service, database, "CRUD")
+Rel(service, consumer, "Service consumes (reads) messages")
+@enduml

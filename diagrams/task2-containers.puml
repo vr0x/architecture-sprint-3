@@ -1,0 +1,41 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+Person(user, "User")
+
+Container(mobileApp, "Mobile App")
+Container(apiGateway, "API Gateway")
+
+System_Boundary(SmartHomeSystem, "Smart Devices System") {
+    Container(devicesService, "Devices Service", "Controls external physical devices")
+    Container(userService, "User Service", "Controls users")
+    Container(deviceMonitoringService, "Devices Sensors Monitor", "Service for monitoring sensors")
+    Container(notificationService, "Notification Service", "Provides users notificating")
+
+    ContainerDb(devicesServiceDB, "Devices DB", "Postgres", "Stores info about devices")
+    ContainerDb(userServiceDB, "Users DB", "Postgres", "Stores info about users")
+    ContainerDb(deviceMonitoringServiceDB, "Sensors Monitoring DB", "Postgres", "Stores info about sensors events")
+    ContainerDb(notificationServiceDB, "Notifications DB", "Postgres", "Stores info about notifications")
+
+    Container(queue, "Message Queue", "Kafka")
+}
+
+Rel(user, mobileApp, "Interaction")
+Rel(mobileApp, apiGateway, "Send request")
+Rel(apiGateway, devicesService, "Redirect")
+Rel(apiGateway, userService, "Redirect")
+Rel(apiGateway, deviceMonitoringService, "Redirect")
+Rel(apiGateway, notificationService, "Redirect")
+
+Rel(devicesService, devicesServiceDB, "CRUD")
+Rel(userService, userServiceDB, "CRUD")
+Rel(deviceMonitoringService, deviceMonitoringServiceDB, "CRUD")
+Rel(notificationService, notificationServiceDB, "CRUD")
+
+Rel(devicesService, queue, "Publish")
+Rel(deviceMonitoringService, queue, "Publish")
+Rel(notificationService, queue, "Subscribed")
+
+Container_Ext(sensor, "Sensors")
+Rel(sensor, devicesService, "Publish events")
+
+@enduml

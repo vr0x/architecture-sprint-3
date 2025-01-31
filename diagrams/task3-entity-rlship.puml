@@ -1,0 +1,58 @@
+@startuml
+entity User {
+    * id : Uint
+    --
+    + username : String
+    + password : String
+    + personalData : PersonalData
+}
+
+entity Device {
+    * id : Uint
+    --
+    + name : String
+    + type : DeviceType
+    + config : DeviceConfig
+    + houseID : Uint
+}
+
+entity DeviceType {
+    * id : Uint
+    --
+    + name : String
+    + configTemplate : DeviceConfig
+}
+
+entity DeviceController {
+    * id : Uint
+    --
+    + device_id : Uint
+    - config : DeviceConfig
+    - isSubscribed : boolean
+}
+
+entity DeviceCommand {
+    * id : Uint
+    --
+    + deviceID : Uint
+    + name : String
+    + newDeviceConfig : DeviceConfig
+}
+
+entity DeviceEvent {
+    * id : Uint
+    --
+    + deviceID : Uint
+    + value : String
+    + config : DeviceConfig
+    + time : Timestamp
+}
+
+User }o--o{ Device
+Device ||--o| DeviceType
+Device ||--o| DeviceController
+Device ||--o{ DeviceCommand
+DeviceEvent ||--o{ DeviceController
+User ||--o{ DeviceEvent
+DeviceCommand ||--o{ DeviceController
+@enduml

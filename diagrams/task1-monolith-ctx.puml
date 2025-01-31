@@ -1,0 +1,15 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User")
+Container(publicInterface, "Public interface")
+
+System(service, "Monolith Heating System Service")
+ContainerDb(database, "Service's Database", "Postgres", "Stores info about houses")
+System_Ext(devices, "Physical Devices", "External devices placed in houses")
+
+Rel(user, publicInterface, "Change devices properties and monitor their sensors")
+Rel(publicInterface, service, "Generate and send to service requests for user's actions", "REST API, HTTP")
+Rel(service, database, "CRUD service-important info", "TCP, SSL")
+Rel(service, devices, "Operate external devices", "HTTP")
+@enduml
