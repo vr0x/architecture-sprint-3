@@ -1,0 +1,32 @@
+@startuml TOBE_Context
+title Диаграмма TO-BE Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+
+Person(User, "Customer", "Конечный пользователь системы")
+Person(Support, "Support", "Специалист службы поддержки")
+
+System(SmartHomeControlSystem, "Smart Home Control", "Система управления умными домом")
+
+System_Ext(SmartHome, "Smart Home", "Умный дом клиента: датчики, объекты управления") 
+System_Ext(PaymentSystem, "Payment System", "Обслуживание платежей")
+System_Ext(NotificationSystem, "Notification System", "Доставка уведомлений")
+System_Ext(AnalyticsSystem, "Analytics System", "Внешняя система аналитики пользователей")
+
+Rel_D(User, SmartHomeControlSystem, "Управление системой")
+Rel_U(SmartHomeControlSystem, User, "Передает состояние системы, потоки информации с датчиков")
+
+Rel_D(Support, SmartHomeControlSystem, "Управление настройками, состоянием и сценариями")
+Rel_U(SmartHomeControlSystem, Support, "Передает состояние системы, потоки информации с датчиков")
+
+Rel_D(SmartHomeControlSystem, SmartHome, "Управляет системой")
+Rel_U(SmartHome, SmartHomeControlSystem, "Передает состояние системы")
+
+Rel_D(SmartHomeControlSystem, PaymentSystem, "Передает информацию для оплаты")
+Rel_U(PaymentSystem, SmartHomeControlSystem, "Передает информацию об оплате")
+
+Rel_D(SmartHomeControlSystem, NotificationSystem, "Отправка уведомлений")
+
+Rel_D(SmartHomeControlSystem, AnalyticsSystem, "Передача информации для аналитики")
+
+@enduml

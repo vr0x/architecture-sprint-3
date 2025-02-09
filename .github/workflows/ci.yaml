@@ -22,7 +22,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GTOKEN }}
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -30,6 +30,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           context: smart-home-monolith
           push: true
-          tags: ghcr.io/yandex-practicum/architecture-sprint-3:latest
+          tags: ghcr.io/andreymirzoyan/architecture-sprint-3:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

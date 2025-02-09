@@ -1,0 +1,47 @@
+@startuml TOBE_Component_MonitoringService
+title Диаграмма компонентов "Сервис мониторинга"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+Container(APIGW, "API GW", "Nginx")
+ContainerQueue(SensorsQueue, "Sensors Queue", "Kafka")
+ContainerQueue(NotificationQueue, "Notifications Queue", "Kafka")
+
+Container_Boundary(MonitoringService, "Сервис мониторинга показаний датчиков") {
+    Component(MonitoringController, "MonitoringController", "Python", "Работа с настройками мониторинга")
+    Component(SensorsHistoryController, "Sensors History Controller", "Python", "Работа с историей показаний датчиков")
+
+    Component(Scheduler, "Scheduler", "Cron", "периоджическая генерация отчетов")
+    ComponentQueue(SchedulerQueue, "Schedules Queue", "Kafka")
+
+    Component(MonitoringManager, "Monitoring Manager", "Python", "Управление мониторингом")
+    Component(SensorsHistoryManager, "Sensors History Manager", "Python", "Управление историей датчиков")
+
+    Component(ReportGenerator, "Report Generator", "Python", "Генератор отчетов")
+
+    ComponentDb(MonitoringDB, "MonitoringDB", "MongoDB + Redis", "Хранение настроек мониторинга, отчетов")
+    ComponentDb(SensorsDB, "SensorsDB", "Timeseries DB", "Хранение истории показаний датчиков")
+}
+
+BiRel_D(APIGW, MonitoringController, "http")
+BiRel_D(APIGW, SensorsHistoryController, "http")
+
+BiRel_D(MonitoringController, MonitoringManager, "")
+BiRel_D(MonitoringManager, MonitoringDB, "")
+
+BiRel_D(SensorsHistoryController, SensorsHistoryManager, "")
+BiRel_D(SensorsHistoryManager, SensorsDB, "")
+
+Rel_L(SensorsQueue, SensorsHistoryManager, "состояние датчиков")
+Rel_D(ReportGenerator, NotificationQueue, "отчеты")
+
+Rel_L(MonitoringManager, Scheduler, "настройка периодических операций")
+
+Rel(Scheduler, SchedulerQueue, "")
+Rel(SchedulerQueue, ReportGenerator, "")
+
+BiRel_U(ReportGenerator, MonitoringDB, "")
+BiRel_U(ReportGenerator, SensorsDB, "")
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml ASIS_Context
+title Диаграмма AS-IS Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_TOP_DOWN()
+
+Person(User, "Customer", "Конечный пользователь системы")
+Person(Specialist, "Specialist", "Выездной специалист")
+
+System(SmartHomeSystem, "Smart Home", "Система управления и мониторинга отопления")
+System_Ext(HeastingSystem, "Heating System", "Система отопления, установленная в домохозяйстве")
+
+Rel(User, SmartHomeSystem, "Выставляет состояние системы отопления")
+Rel(Specialist, SmartHomeSystem, "Регистрирует новые системы и датчики")
+Rel(SmartHomeSystem, User, "Передает показания датчиков")
+Rel(SmartHomeSystem, HeastingSystem, "Управляет состоянием системы")
+Rel(HeastingSystem, SmartHomeSystem, "Передает состояние датчиков")
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml TOBE_ERD
+title Диаграмма ER
+
+entity User {
+    * id : UUID
+    --
+    * name: varchar
+    * email : varchar
+    * password : varchar
+    * balance: float
+}
+
+entity House {
+    * id : UUID
+    --
+    * name: varchar
+    addr: varchar
+}
+
+entity DeviceType {
+    * id : int
+    --
+    * type: varchar
+    * name: varchar
+}
+
+entity Device {
+    * id : UUID
+    --
+    name: varchar
+    * type_id: int
+    * house_id : UUID
+    * ip: varchar
+    serial: varchar
+    properties: json
+    status: json
+}
+
+
+entity ModuleType {
+    * id : int
+    --
+    * type: varchar
+    * name: varchar
+}
+
+entity Module {
+    * id : UUID
+    --
+    name: varchar
+    * type_id: int
+    * device_id : UUID
+    serial: varchar
+}
+
+entity TelemetryData {
+    * id : UUID
+    --
+    * timestamp : date
+    * device_id : UUID
+    telemetry: json
+}
+
+User }|..o{ House: own
+House ||..o{ Device: contain
+Device }o..|| DeviceType: type of
+Module }o..|| ModuleType: type of
+Device ||..|{ Module: consist of
+Device ||..o{ TelemetryData: produce
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml TOBE_Component_PaymentsManagement
+title Диаграмма компонентов "Управление платежами"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+Container(UserManagement, "User Management", "Python", "Управление платежами")
+ContainerQueue(NotificationQueue, "Notifications Queue", "Kafka")
+ContainerQueue(EventsQueue, "Events Queue", "Kafka", "Очередь для всех внутренних событий системы")
+System_Ext(PaymentSystem, "Payment System", "Обслуживание платежей")
+
+Container_Boundary(PaymentsManagement, "Управление платежами") {
+    Component(PaymentsController, "PaymentsController", "Python", "Инициация, получение статуса платежа")
+    Component(PaymentsManager, "Payments Manager", "Python", "Обработка платежей")
+    ComponentDb(PaymentsDB, "PaymentsDB", "PostgreSQL + Redis", "Хранение информации о платежах, транзакциях")
+}
+
+
+Rel(UserManagement, PaymentsController, "инициация платежей")
+Rel(PaymentsManager, NotificationQueue, "уведомления транзакциях")
+
+BiRel(PaymentsController, PaymentsManager, "")
+
+Rel_R(PaymentsManager, EventsQueue, "соообщения о проведенных/отмененных платежах")
+BiRel(PaymentsManager, PaymentsDB, "")
+
+
+BiRel_L(PaymentsManager, PaymentSystem, "http")
+
+@enduml

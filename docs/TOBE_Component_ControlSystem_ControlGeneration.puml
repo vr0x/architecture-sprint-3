@@ -1,0 +1,48 @@
+@startuml TOBE_Component_ControlSystem_ControlGeneration
+title Диаграмма классов системы управления
+
+namespace Utils {
+    interface EventsSubscriber {
+        + subscribe(listener: EventCallback)
+        + unsubscribe(listener: EventCallback)
+    }
+    class KafkaSubscriber implements EventsSubscriber {
+        + topic : String
+    }
+
+    interface EventsPublisher {
+        + publish(event: Event)
+    }
+    class KafkaPublisher implements EventsPublisher {
+        + topic : String
+    }
+}
+
+
+namespace SystemControl {
+    class ConfigurationRepository {
+        + findById(id: UUID): Configuration
+    }
+    class DevicesRepository {
+        - controlPublisher: KafkaPublisher
+        + findById(id: UUID): Devices
+        + getDeviceState(deviceId: UUID): DeviceState
+        + setDeviceProperty(deviceId: UUID, property: String, value: Any)
+        + submitDeviceCommand(deviceId: UUID, command: String)
+    }
+    interface SystemControlGenerator {
+        + process()
+    }
+
+    DevicesRepository -- Utils.KafkaPublisher: use for control commands >
+
+
+    SystemControlGenerator -- DevicesRepository: use >
+    SystemControlGenerator -- ConfigurationRepository: use >
+
+    SystemControlGenerator -- Utils.KafkaPublisher: use for notifications >
+    SystemControlGenerator -- Utils.KafkaSubscriber: use for schedules, sensors >
+   
+}
+
+@enduml

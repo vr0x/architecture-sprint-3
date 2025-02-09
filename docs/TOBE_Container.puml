@@ -1,0 +1,84 @@
+@startuml TOBE_Container
+title Диаграмма контейнеров
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+Person(User, "Customer", "Конечный пользователь системы")
+Person(Support, "Support", "Специалист службы поддержки")
+
+System_Boundary(SmartHomeControlSystem, "Система управления умным домом") {
+    Container(MobileApp, "Mobile App", "Jetpack Compose", "Кроссплатформенной мобильное приложение")
+    Container(WebApp, "Web App", "React.js", "Веб-приложение")
+    Container(SupportWebApp, "Support Web App", "React.js", "Веб-приложение для саппорта")
+    Container(VideoServer, "Video Server", "Jitsi", "Ретрансляция видео с камер и подготовка для клинтского устройства")
+    Container(Agent, "Agent", "JVM/Kotlin", "Агент, устанавливаемый в контур клиента")
+    Container(AgentService, "Agent Service", "Python", "Сервис взаимодействия с клиентскими системами")
+    Container(ControlSystem, "Control System", "Python", "Система управления")
+    Container(MonitoringService, "Monitoring Service", "Python", "Сервис мониторинга показаний датчиков")
+    Container(UserManagement, "User Management", "Python", "Управление пользователями")
+    Container(PaymentsManagement, "Payments Management", "Python", "Управление платежами")
+    ContainerQueue(SensorsQueue, "Sensors Queue", "Kafka")
+    ContainerQueue(EventsQueue, "Events Queue", "Kafka", "Очередь для всех внутренних событий системы")
+    Container(APIGW, "API GW", "Nginx")
+    ContainerQueue(NotificationQueue, "Notifications Queue", "Kafka")
+    Container(NotificationService, "Notifications Service", "Python")
+}
+
+System_Ext(SmartHome, "Smart Home", "Умный дом клиента: датчики, объекты управления") 
+System_Ext(PaymentSystem, "Payment System", "Обслуживание платежей")
+System_Ext(NotificationSystem, "Notification System", "Доставка уведомлений")
+System_Ext(AnalyticsSystem, "Analytics System", "Внешняя система аналитики пользователей")
+
+Rel_D(User, MobileApp, "управляет системой")
+Rel_U(MobileApp, User, "состояние датчиков")
+
+Rel_D(User, WebApp, "управляет системой")
+Rel_U(VideoServer, User, "видео с камер")
+
+Rel_U(WebApp, User, "состояние датчиков")
+
+Rel_D(Support, SupportWebApp, "управляет системой")
+Rel_U(SupportWebApp, Support, "состояние датчиков")
+
+Rel_D(Agent, SmartHome, "управляет системой")
+Rel_U(SmartHome, Agent, "состояние датчиков")
+Rel_U(Agent, VideoServer, "видео с камер")
+
+Rel_D(WebApp, AnalyticsSystem, "аналитика")
+Rel_D(MobileApp, AnalyticsSystem, "аналитика")
+
+
+Rel_U(AgentService, SensorsQueue, "состояние датчиков")
+Rel_U(SensorsQueue, ControlSystem, "состояние датчиков")
+Rel_U(SensorsQueue, MonitoringService, "состояние датчиков")
+
+BiRel_D(MobileApp, APIGW, "http")
+BiRel_D(WebApp, APIGW, "http")
+BiRel_D(SupportWebApp, APIGW, "http")
+
+BiRel_D(APIGW, ControlSystem, "http")
+BiRel_D(APIGW, UserManagement, "http")
+BiRel_D(APIGW, MonitoringService, "http")
+
+BiRel_L(UserManagement, PaymentsManagement, "платежи")
+BiRel_R(PaymentsManagement, PaymentSystem, "http")
+
+
+BiRel_D(AgentService, Agent, "http")
+
+Rel_D(ControlSystem, AgentService, "управляет системой")
+
+Rel(NotificationSystem, User, "emails, pushes, etc..")
+Rel(NotificationService, NotificationSystem, "уведомления")
+
+Rel_D(ControlSystem, NotificationQueue, "уведомления")
+Rel_D(PaymentsManagement, NotificationQueue, "уведомления")
+Rel_D(MonitoringService, NotificationQueue, "уведомления")
+Rel_D(UserManagement, NotificationQueue, "уведомления")
+Rel_D(NotificationQueue, NotificationService, "уведомления")
+
+'Лишь для расположения EventsQueue
+EventsQueue -[hidden]R--> SensorsQueue
+EventsQueue -[hidden]U--> ControlSystem
+@enduml

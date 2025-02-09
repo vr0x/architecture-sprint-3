@@ -1,0 +1,57 @@
+@startuml TOBE_Component_ControlSystem
+title Диаграмма компонентов "Система управления"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+ContainerQueue(SensorsQueue, "Sensors Queue", "Kafka")
+Container(APIGW, "API GW", "Nginx")
+Container(AgentService, "Agent Service", "Python", "Сервис взаимодействия с клиентскими системами")
+Container(NotificationService, "Notifications Service", "Python")
+ContainerQueue(EventsQueue, "Events Queue", "Kafka", "Очередь для всех внутренних событий системы")
+
+Container_Boundary(ControlSystem, "Система управления") {
+    Component(TopologyController, "Topology Controller", "Python", "Управление топологией системы умного дома: создание, удаление устройств")
+    Component(PropertiesController, "Properties Controller", "Python", "Управление параметрами системы")
+    Component(ScenarioController, "Scenario Controller", "Python", "Управление сценариями системы")
+    Component(DevicesController, "Devices Controller", "Python", "Показания датчиков")
+    Component(ConfigurationManagement, "Configuration Management", "Python", "Конфигурация системы")
+    ComponentDb(ConfigurationDB, "Configuration DB", "MongoDB + Redis", "Хранение топологии, параметров, сценариев системы")
+    Component(Scheduler, "Scheduler", "Cron", "Контроль рSchedulerасписания")
+    ComponentQueue(SchedulerQueue, "Schedules Queue", "Kafka")
+    ComponentDb(DevicesDB, "DevicesDB", "MongoDB + Redis", "Хранение состояния устройств")
+    Component(SystemControlGeneration, "System Control Generation", "Python", "Выработка управлящих команд с учетом времени, топологии, сценариев, параметров, состояния датчиков, действий пользователя")
+    ComponentQueue(SystemControlQueue, "System Control Queue", "Kafka", "Поток управления")
+}
+
+BiRel(APIGW, TopologyController, "http")
+BiRel(APIGW, PropertiesController, "http")
+BiRel(APIGW, ScenarioController, "http")
+BiRel(APIGW, DevicesController, "http")
+
+BiRel(TopologyController, ConfigurationManagement, "топология")
+BiRel(PropertiesController, ConfigurationManagement, "параметры")
+BiRel(ScenarioController, ConfigurationManagement, "сценарии")
+
+
+BiRel(ConfigurationManagement, ConfigurationDB, "")
+
+Rel_L(SensorsQueue, DevicesController, "состояние датчиков")
+Rel_L(SensorsQueue, SystemControlGeneration, "отслеживание изменения состояния датчиков")
+Rel(SystemControlQueue, AgentService, "управляющие команды")
+Rel(SystemControlGeneration, NotificationService, "уведомления")
+
+BiRel(DevicesController, DevicesDB, "")
+
+Rel(ConfigurationManagement, Scheduler, "изменение расписания")
+Rel(ConfigurationDB, Scheduler, "расписание")
+
+Rel(ConfigurationDB, SystemControlGeneration, "")
+Rel(DevicesDB, SystemControlGeneration, "")
+Rel(Scheduler, SchedulerQueue, "")
+Rel(SchedulerQueue, SystemControlGeneration, "")
+Rel_L(SystemControlGeneration, SystemControlQueue, "")
+
+Rel(EventsQueue, ConfigurationManagement, "Остановка и запуск управления при изменении статуса пользователя")
+
+@enduml

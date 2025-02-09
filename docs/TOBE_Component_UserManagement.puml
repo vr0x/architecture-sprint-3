@@ -1,0 +1,39 @@
+@startuml TOBE_Component_UserManagement
+title Диаграмма компонентов "Управление пользователями"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+Container(APIGW, "API GW", "Nginx")
+Container(PaymentsManagement, "Payments Management", "Python", "Управление платежами")
+ContainerQueue(NotificationQueue, "Notifications Queue", "Kafka")
+ContainerQueue(EventsQueue, "Events Queue", "Kafka", "Очередь для всех внутренних событий системы")
+
+Container_Boundary(UserManagement, "Управление пользователями") {
+    Component(UsersController, "UsersController", "Python", "Работа с профилем пользователей, авторизация, регистрация")
+
+    Component(Scheduler, "Scheduler", "Cron", "Инициация периодических операций: проверка статуса, баланса, лицензии, итп")
+    ComponentQueue(SchedulerQueue, "Schedules Queue", "Kafka")
+
+    Component(UsersManager, "Users Manager", "Python", "Управление пользователями")
+
+    ComponentDb(UsersDB, "UsersDB", "MongoDB + Redis", "Хранение учеток пользователей")
+}
+
+
+BiRel_D(APIGW, UsersController, "http")
+Rel_L(UsersManager, PaymentsManagement, "инициация платежей")
+Rel_R(PaymentsManagement, UsersManager, "статус платежей")
+Rel_D(UsersManager, NotificationQueue, "уведомления о прошедших и предстоящих операциях")
+Rel_U(UsersManager, Scheduler, "настройка периодических операций по пользователю")
+
+Rel(Scheduler, SchedulerQueue, "")
+Rel(SchedulerQueue, UsersManager, "")
+
+BiRel_D(UsersController, UsersManager, "")
+
+Rel_D(UsersManager, EventsQueue, "соообщения о создании, удалении, изменении статуса пользователей")
+Rel_U(EventsQueue, UsersManager, "соообщения о проведенных/отмененных транзакциях")
+BiRel_R(UsersManager, UsersDB, "")
+
+@enduml
