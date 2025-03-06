@@ -1,0 +1,131 @@
+@startuml
+title Диаграмма компонентов системы отопления
+
+' Компоненты Web приложения
+package "Web приложение" {
+    class "UI Components" as WebUI {
+        +renderDashboard()
+        +renderSettings()
+    }
+    class "API Client" as WebAPIClient {
+        +getState()
+        +setTemperature()
+    }
+    WebUI --> WebAPIClient
+}
+
+' Компоненты мобильного приложения
+package "Мобильное приложение" {
+    class "UI Components" as MobileUI {
+        +renderDashboard()
+        +renderSettings()
+    }
+    class "API Client" as MobileAPIClient {
+        +getState()
+        +setTemperature()
+    }
+    MobileUI --> MobileAPIClient
+}
+
+' Компоненты API Gateway
+package "API Gateway" {
+   
+    APIGatewayRouting --> APIGatewayAuth
+}
+
+' Компоненты сервиса управления состоянием
+package "Сервис управления состоянием" {
+    class "StateController" as StateController {
+        +getState()
+        +setState()
+    }
+    class "StateService" as StateService {
+        +getState()
+        +updateState()
+    }
+    class "StateRepository" as StateRepository {
+        +getState()
+        +saveState()
+    }
+    StateController --> StateService
+    StateService --> StateRepository
+}
+
+' Компоненты сервиса управления температурой
+package "Сервис управления температурой" {
+    class "TemperatureController" as TempController {
+        +getTemperature()
+        +setTemperature()
+    }
+    class "TemperatureService" as TempService {
+        +getTemperature()
+        +updateTemperature()
+    }
+    class "TemperatureRepository" as TempRepository {
+        +getTemperature()
+        +saveTemperature()
+    }
+    TempController --> TempService
+    TempService --> TempRepository
+}
+
+' Компоненты сервиса телеметрии
+package "Сервис телеметрии" {
+    class "TelemetryController" as TelemetryController {
+        +getTelemetryData()
+    }
+    class "TelemetryService" as TelemetryService {
+        +analyzeData()
+        +generateReport()
+    }
+    class "TelemetryRepository" as TelemetryRepository {
+        +findData()
+        +saveData()
+    }
+    TelemetryController --> TelemetryService
+    TelemetryService --> TelemetryRepository
+}
+
+' Компоненты сервиса пользователя
+package "Сервис пользователя" {
+    class "UserController" as UserController {
+        +registerUser()
+        +loginUser()
+        +getUserInfo()
+    }
+    class "UserService" as UserService {
+        +registerUser()
+        +authenticateUser()
+        +getUserInfo()
+    }
+    class "UserRepository" as UserRepository {
+        +findUserByUsername()
+        +saveUser()
+    }
+    UserController --> UserService
+    UserService --> UserRepository
+}
+
+' Message Broker (Kafka)
+package "Message Broker" {
+    class "Kafka" as Kafka {
+        +publish(topic, message)
+        +subscribe(topic, callback)
+    }
+}
+
+' Связи между компонентами и контейнерами
+WebAPIClient --> APIGatewayRouting : Отправляет запросы
+MobileAPIClient --> APIGatewayRouting : Отправляет запросы
+APIGatewayRouting --> StateController : Маршрутизирует запросы
+APIGatewayRouting --> TempController : Маршрутизирует запросы
+APIGatewayRouting --> TelemetryController : Маршрутизирует запросы
+APIGatewayRouting --> UserController : Маршрутизирует запросы
+
+' Взаимодействие с Kafka
+StateService --> Kafka : Публикует события состояния
+TempService --> Kafka : Публикует температурные данные
+TelemetryService --> Kafka : Подписывается на события
+Kafka --> TelemetryService : Передает данные телеметрии
+
+@enduml

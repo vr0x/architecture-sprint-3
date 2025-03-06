@@ -1,0 +1,2 @@
+echo "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" | docker login ghcr.io -u vr0x --password-stdin
+docker pull ghcr.io/vr0x/architecture-sprint-3:latest

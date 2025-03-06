@@ -1,0 +1,61 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контейнеров системы отопления
+
+Person(user, "Пользователь", "")
+
+System_Boundary(heating_system, "Тепелый дом") {
+    Container(web_app, "Web приложение", "React", "Пользовательский интерфейс для управления системой отопления")
+
+    Container(mobile_app, "Мобильное приложений ", "React Native", "Пользовательский интерфейс для управления системой отопления")
+    
+    Container("sso_service", "SSO", "keycloak", "Авторизация")
+
+    Container(api_gateway, "API Gateway", "KUSK", "Маршрутизация и балансировка запросов")
+    
+    Container(state_service, "Сервис устройств", "Spring Boot", "Управляет включением/выключением системы")
+
+    Container(user_service, "Сервис пользователей", "Spring Boot", "Управляет пользователями")
+    
+    Container(temp_service, "Сервис управления температурой", "Spring Boot", "Контролирует температурные режимы")
+    
+    Container(monitoring_service, "Сервис мониторинга", "Spring Boot", "Собирает и анализирует данные о работе системы")
+    
+    
+    ContainerDb(user_db, "БД пользователей", "PostgreSQL", "Хранит информацию о пользователях")
+    
+    ContainerDb(state_db, "БД устройств", "PostgreSQL", "Хранит информацию о состояниях системы")
+    
+    ContainerDb(temp_db, "БД температур", "PostgreSQL", "Хранит температурные данные")
+    
+    ContainerDb(monitoring_db, "БД мониторинга", "PostgreSQL", "Хранит данные мониторинга")
+    
+    Container(message_broker, "Message Broker", "Kafka", "Обеспечивает асинхронное взаимодействие между сервисами")
+}
+
+' Связи с пользователем
+Rel(user, web_app, "Использует", "HTTPS")
+Rel(user, mobile_app, "Использует", "HTTPS")
+Rel(web_app, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(mobile_app, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(api_gateway, sso_service, "Отправляет запросы", "HTTPS/JSON")
+Rel(sso_service, user_service, "Отправляет запросы", "HTTPS/JSON")
+
+' Связи через API Gateway
+Rel(api_gateway, state_service, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, temp_service, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, monitoring_service, "Маршрутизирует запросы", "HTTPS/JSON")
+
+' Связи с базами данных
+Rel(user_service, user_db, "Читает/Пишет", "JDBC")
+Rel(state_service, state_db, "Читает/Пишет", "JDBC")
+Rel(temp_service, temp_db, "Читает/Пишет", "JDBC")
+Rel(monitoring_service, monitoring_db, "Читает/Пишет", "JDBC")
+
+' Связи через Message Broker
+Rel(state_service, message_broker, "Публикует события состояния")
+Rel(temp_service, message_broker, "Публикует температурные данные")
+Rel(monitoring_service, message_broker, "Подписывается на события")
+
+@enduml
