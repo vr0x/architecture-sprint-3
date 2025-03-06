@@ -1,0 +1,73 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов системы отопления
+
+' Компоненты Web приложения
+Component(web_ui, "Web APP", "React", "Компоненты пользовательского интерфейса")
+Component(web_api_client, "API Client", "Axios", "Отправляет запросы к API Gateway")
+Rel(web_ui, web_api_client, "Использует", "HTTP")
+
+' Компоненты мобильного приложения
+Component(mobile_ui, "Mobile App", "React Native", "Компоненты пользовательского интерфейса")
+Component(mobile_api_client, "API Client", "Axios", "Отправляет запросы к API Gateway")
+Rel(mobile_ui, mobile_api_client, "Использует", "HTTP")
+
+' Компоненты API Gateway
+Component(api_gateway, "Routing", "KUSK", "Маршрутизация запросов")
+Component(gateway_auth, "SSO", "keycloak", "Аутентификация и авторизация")
+Rel(api_gateway, gateway_auth, "Использует", "HTTP")
+
+
+' Компонент пользователя системы
+Component(user_service, "User Service", "Spring Boot", "Управление пользователями, аутентификация и авторизация")
+Component(user_repository, "User Repository", "Логика доступа к данным пользователей")
+Rel(user_service, user_repository, "Использует", "JDBC")
+
+
+' Компоненты сервиса управления состоянием
+Component(state_controller, "State Controller", "Spring Boot", "Обрабатывает запросы на управление состоянием")
+Component(state_service_logic, "State Logic", "Spring Boot", "Бизнес-логика управления состоянием")
+Component(state_service_repository, "Repository Layer", "Логика доступа к данным")
+Rel(state_service_logic,state_service_repository,"")
+Rel(state_controller, state_service_logic, "Использует", "REST")
+
+' Компоненты сервиса управления температурой
+Component(temp_controller, "Temperature Controller", "Spring Boot", "Обрабатывает запросы на управление температурой")
+Component(temp_service_logic, "Temperature Service", "Spring Boot", "Бизнес-логика управления температурой")
+Component(temp_service_repository, "Repository Layer", "Логика доступа к данным")
+Rel(temp_service_logic,temp_service_repository,"")
+Rel(temp_controller, temp_service_logic, "Использует", "REST")
+
+' Компоненты сервиса телеметрии
+Component(Telemetry_controller, "Telemetry Controller", "Spring Boot", "Обрабатывает запросы на мониторинг")
+Component(Telemetry_service_logic, "Telemetry Service", "Spring Boot", "Бизнес-логика телеметрии")
+Component(Telemetry_service_repository, "Repository Layer", "Логика доступа к данным")
+Rel(Telemetry_service_logic,Telemetry_service_repository,"")
+Rel(Telemetry_controller, Telemetry_service_logic, "Использует", "REST")
+
+' Контейнеры БД
+ContainerDb(state_db, "БД устройств", "PostgreSQL", "Хранит информацию о состояниях системы")    
+ContainerDb(temp_db, "БД температур", "PostgreSQL", "Хранит температурные данные")
+ContainerDb(Telemetry_db, "БД телеметрии", "PostgreSQL", "Хранит данные телеметрии")
+ContainerDb(user_db, "БД пользователей", "PostgreSQL", "Хранит данные пользователей")
+
+' Message Broker
+Container(message_broker, "Message Broker", "Kafka", "Обеспечивает асинхронное взаимодействие между сервисами")
+
+' Связи между компонентами и контейнерами
+Rel(web_api_client, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(mobile_api_client, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(api_gateway, state_controller, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, temp_controller, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, Telemetry_controller, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(state_service_repository, state_db, "Читает/Пишет", "JDBC")
+Rel(temp_service_repository, temp_db, "Читает/Пишет", "JDBC")
+Rel(Telemetry_service_repository, Telemetry_db, "Читает/Пишет", "JDBC")
+Rel(user_repository, user_db, "Читает/Пишет", "JDBC")
+Rel(state_service_logic, message_broker, "Публикует события состояния", "Kafka")
+Rel(temp_service_logic, message_broker, "Публикует температурные данные", "Kafka")
+Rel(Telemetry_service_logic, message_broker, "Подписывается на события", "Kafka")
+Rel(gateway_auth, user_service, "Использует", "HTTP")
+
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+title Диаграмма контекстов системы "Теплый дом"
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "Пользователь системы")
+
+System_Boundary(heating_system, "Система 'Heating Management Теплый дом'") {
+    System(DeviceManagement, "Управление Устройствами", "Управление состоянием устройств (включение/выключение)")
+    System(TemperatureManagement, "Управление температурой", "Контроль и регулировка температурных режимов")
+    System(TelemetryManagement, "Телеметрия", "Сбор данных о состоянии устройств и температуре")
+    System(UserManagement, "Управление пользователями", "Управление учетными записями и правами доступа")
+}
+
+' Взаимодействия
+Rel(user, heating_system, "Использует", "HTTPS/JSON")
+
+Rel(DeviceManagement, TelemetryManagement, "Передает данные о состоянии", "Kafka")
+Rel(TemperatureManagement, TelemetryManagement, "Передает данные о температуре", "Kafka")
+Rel(TemperatureManagement, DeviceManagement, "Управляет устройствами на основе температуры", "REST")
+Rel(UserManagement, DeviceManagement, "Контролирует доступ к устройствам", "REST")
+
+@enduml
